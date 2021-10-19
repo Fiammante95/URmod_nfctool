@@ -1,0 +1,10 @@
+def ini_grids():
+    
+    # grid = [nPallPosX, nPallPosY, distPallX, distPallY, pallPosX1, pallPosY1, pallPosZ1]
+    # la struttura e' del tutto analoga in logica con quella espressa in defs
+    grids = [
+                     [4, 4, 90, 90, 10, 20, 6] # griglia moduli
+                     [2, 1, 200, 0, 20, -40, 45] # griglia stazioni
+                 ]
+    return grids
+end

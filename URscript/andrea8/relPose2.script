@@ -1,0 +1,11 @@
+def relPose(FeaturePose,vect):
+
+    # FeaturePose is the pose for the feature
+    # vect = p[0.1, 0, 0, 0, 0, 0] makes us move 10cm in the X direction of the feature
+    # credits: https://forum.universal-robots.com/t/move-tcp-relative-to-feature/15492
+
+   PoseRelativeToFeature = pose_trans(pose_inv(FeaturePose), get_actual_tcp_pose())
+   MoveTCPRelativeToFeature = pose_add(PoseRelativeToFeature, vect)
+   return pose_trans(FeaturePose, MoveTCPRelativeToFeature)
+
+end
