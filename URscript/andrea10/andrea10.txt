@@ -1,0 +1,128 @@
+ Program
+   Init Variables
+   Robot Program
+     Script: relPose.script
+     Script: tcpMov.script
+     Script: calcItemPosition.script
+     Script: pickPalletItem.script
+     Script: stockUpdate.script
+     Script: ini_grid.script
+     Script: ini_defs.script
+     Script: ini_types.script
+     Script: ini_stocks2.script
+     If nCycle≟0
+       Set
+       pallTypes≔ini_types()
+       grid≔ini_grid()
+       pallDefs≔ini_defs()
+       pallStocks≔ini_stocks(pallDefs,pallTypes)
+       'Popup'
+       ghr≔ghr
+       nfc≔nfc
+       ant≔ant
+       col≔col
+       'Missing: Open Gripper'
+       nCycle≔1
+       'Wait: 5.0'
+     MoveJ
+       tcp_pinza
+       item≔ghr
+       pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+       lastpick≔pick
+       'Popup'
+       XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+       p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+       'Popup'
+       p_pall
+     MoveL
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, -130*0.001, 0.0, 0.0, 0.0])
+       p_pezzo
+       'Missing: Close Gripper'
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 130/1000, 0.0, 0.0, 0.0])
+       p_pezzo
+       pallStocks≔stockUpdate(pick,pallStocks)
+       'Popup'
+     MoveJ
+       tcp_ventosaX
+       'tcp_ventosaY_s'
+       item≔nfc
+       pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+       'Popup'
+       XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+       p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+       'Popup'
+       p_pall
+     MoveL
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, -181.4*0.001, 0.0, 0.0, 0.0])
+       p_pezzo
+       Wait: 2.0
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 181.4/1000, 0.0, 0.0, 0.0])
+       p_pezzo
+       pallStocks≔stockUpdate(pick,pallStocks)
+       'Popup'
+     MoveJ
+       Punto_percors_1
+       Punto_percors_9
+     MoveL
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, -55*0.001, 0.0, 0.0, 0.0])
+       p_pezzo
+       Wait: 2.0
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 55/1000, 0.0, 0.0, 0.0])
+       p_pezzo
+     MoveJ
+       tcp_pinza_s
+       Punto_percors_6
+       'Missing: Open Gripper'
+       tcp_pinza_s
+     MoveJ
+       tcp_coll_s
+       Punto_percors_7
+       Punto_percors_8
+       Punto_percors_7
+       'tcp_colla'
+       arco01
+     MoveP
+       CircleMove
+         ViaPoint_1
+         EndPoint_1
+       Wait: 0.5
+     MoveP
+       EndPoint_1
+       CircleMove
+         ViaPoint_1
+         arco01
+     MoveJ
+       tcp_coll_s
+       Punto_percors_5
+       Punto_percor_11
+       Wait: 1.0
+       Punto_percors_5
+       'tcp_ventosaY_s'
+       'Punto_percors_4'
+     MoveL
+       Punto_percor_12
+       Punto_percor_13
+       Wait: 2.0
+       Punto_percor_12
+       'tcp_pressaY'
+       'tcp_pressaX'
+     MoveJ
+       tcp_pinza_s
+       Punto_percors_6
+       'Missing: Open Gripper'
+       tcp_pinza_s
+     MoveJ
+       tcp_pinza
+       'Popup'
+       XY≔calcItemPosition(lastpick, item,pallDefs, grid,piano_moduli)
+       p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+       'Popup'
+       p_pall
+     MoveJ
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, -130*0.001, 0.0, 0.0, 0.0])
+       p_pezzo
+       'Missing: Close Gripper'
+       p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 130/1000, 0.0, 0.0, 0.0])
+       p_pezzo
+       'Popup'
+     'Popup'
