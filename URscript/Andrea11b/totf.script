@@ -1,0 +1,5 @@
+def totf(tcpf):
+
+    return sqrt(tcpf[0]*tcpf[0]+tcpf[1]*tcpf[1]+tcpf[2]*tcpf[2]+tcpf[3]*tcpf[3]+tcpf[4]*tcpf[4]+tcpf[5]*tcpf[5])
+
+end

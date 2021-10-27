@@ -1,0 +1,207 @@
+ Programma
+   Variabili iniz
+   Programma Robot
+     Script: relPose.script
+     Script: totf.script
+     Script: tcpMov.script
+     Script: calcItemPosition.script_bak
+     Script: pickPalletItem.script
+     Script: stockUpdate.script_bak
+     Script: ini_grid.script_bak.script
+     Script: ini_defs.script_bak.script
+     Script: ini_types.script_bak_bak
+     Script: ini_stocks2.script
+     Script: gen_tcp_grid.script
+     If nCycle≟0
+       Imposta Pinza_2_Apre=Off
+       pallTypes≔ini_types()
+       nfc_ck_override≔ True 
+       grid≔ini_grid()
+       pallDefs≔ini_defs()
+       pallStocks≔ini_stocks(pallDefs,pallTypes)
+       'Popup'
+       ghr≔ghr
+       nfc≔nfc
+       ant≔ant
+       col≔col
+       dump≔dump
+       Close Gripper
+       nCycle≔1
+       nfc_check≔ False 
+       ghr_check≔ False 
+       Attendere: 5.0
+     MuoviJ
+       tcp_pinza
+       item≔ghr
+       pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+       lastpick≔pick
+       'Popup'
+       XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+       p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+       'Popup'
+       p_pall
+     MuoviL
+       Direzione: origine_moduli Z-
+         Until (distance)
+           Open Gripper
+           p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 125/1000, 0.0, 0.0, 0.0])
+           p_pezzo
+           pallStocks≔stockUpdate(pick,pallStocks)
+         Until (expression)
+           ghr_check≔ False 
+           ghr_attpt≔0
+           Ciclo ghr_check≟ False 
+             'MuoviL'
+             ghr_attpt≔ghr_attpt+1
+             MuoviL
+               Punto_percor_14
+             If ghr_attpt≟4
+               ghr_attpt≔0
+               MuoviL
+                 Punto_percor_15
+             MuoviL
+               Punto_percor_10
+             Direzione: origine_moduli Z-
+               Until (distance)
+                 Open Gripper
+                 p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 125/1000, 0.0, 0.0, 0.0])
+                 p_pezzo
+                 pallStocks≔stockUpdate(pick,pallStocks)
+                 ghr_check≔ True 
+               Until (expression)
+                 MuoviL
+                   Punto_percors_6
+     nfc_check≔ False 
+     Ciclo nfc_check≟ False 
+       MuoviJ
+         tcp_ventosaX
+         item≔dump
+         pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+         'Popup'
+         XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+         p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+         'Popup'
+         p_pall
+         Imposta Pinza_2_Apre=Off
+       MuoviJ
+         tcp_ventosaX
+         'tcp_ventosaY_s'
+         item≔nfc
+         pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+         'Popup'
+         XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+         p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+         'Popup'
+         p_pall
+       MuoviL
+         p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, -183*0.001, 0.0, 0.0, 0.0])
+         p_pezzo
+         Imposta Pinza_2_Apre=On
+         Attendere: 2.0
+         p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 183/1000, 0.0, 0.0, 0.0])
+         p_pezzo
+         pallStocks≔stockUpdate(pick,pallStocks)
+         'Popup'
+       MuoviJ
+         Punto_percors_1
+         Punto_percors_9
+       MuoviL
+         p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, -67*0.001, 0.0, 0.0, 0.0])
+         p_pezzo
+         'Attendere: 2.5'
+         If nfc_ck_override≟ True 
+           nfc_check≔ True 
+         Ripetere 5 X volte
+           Attendere: 0.5
+           If digital_in[4]≟ True 
+             nfc_check≔ True 
+         p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 70/1000, 0.0, 0.0, 0.0])
+         p_pezzo
+     MuoviJ
+       tcp_pinza_s
+       pinz_col_up
+       pinz_col_in
+       Close Gripper
+       pinz_col_out
+       'pinz_col_up'
+       Punto_percors_2
+       'Open Gripper'
+       tcp_pinza_s
+     MuoviJ
+       tcp_coll_s
+       Punto_percors_7
+       Punto_percors_8
+       Punto_percors_7
+       'tcp_colla'
+     MuoviL
+       arco01
+       Attendere: 0.1
+       Punto_percors_3
+     MuoviJ
+       tcp_coll_s
+     MuoviJ
+       'tcp_ventosaY_s'
+       Punto_percors_5
+       Punto_percor_11
+       Attendere: 1.0
+       Imposta Pinza_2_Apre=Off
+       Attendere: 1.0
+       Punto_percors_5
+       'Punto_percors_4'
+     MuoviL
+       Punto_percor_12
+       Punto_percor_13
+       Attendere: 2.0
+       Punto_percor_12
+       'tcp_pressaY'
+       'tcp_pressaX'
+     MuoviJ
+       tcp_pinza_s
+       pinz_col_up
+       pinz_col_out
+       pinz_col_in
+       Open Gripper
+       pinz_col_up
+       'pinz_col_up'
+       'Punto_percors_2'
+       'Open Gripper'
+       tcp_pinza_s
+     MuoviJ
+       tcp_pinza
+       'Popup'
+       XY≔calcItemPosition(lastpick, item,pallDefs, grid,piano_moduli)
+       p_pall≔relPose(piano_moduli_const,p[XY[0]/1000-0.000,XY[1]/1000-0.0035,0.0,0.0,0.0,0.0])
+       'Popup'
+       p_pall
+     MuoviL
+       Direzione: origine_moduli Z-
+         Until (distance)
+           Close Gripper
+           p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 125/1000, 0.0, 0.0, 0.0])
+           p_pezzo
+           pallStocks≔stockUpdate(pick,pallStocks)
+         Until (expression)
+           ghr_check≔ False 
+           ghr_attpt≔0
+           Ciclo ghr_check≟ False 
+             'MuoviL'
+             ghr_attpt≔ghr_attpt+1
+             MuoviL
+               Punto_percor_16
+             If ghr_attpt≟4
+               ghr_attpt≔1
+               MuoviL
+                 Punto_percor_15
+             MuoviL
+               Punto_percor_10
+             Direzione: origine_moduli Z-
+               Until (distance)
+                 Close Gripper
+                 p_pezzo≔relPose(piano_moduli,p[0.0, 0.0, 125/1000, 0.0, 0.0, 0.0])
+                 p_pezzo
+                 pallStocks≔stockUpdate(pick,pallStocks)
+                 ghr_check≔ True 
+               Until (expression)
+                 MuoviL
+                   Punto_percors_6
+     'Popup'

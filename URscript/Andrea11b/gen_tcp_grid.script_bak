@@ -1,0 +1,27 @@
+def next_tcp_grid_pos(cur_pos,size,dist)
+
+# size e' la dimensione della griglia da generare,
+# 2 significa 2x2, 3 significa 3x3 etc
+
+rel_p = [0,0]
+tcpp = get_actual_tcp_pose()
+
+posX = cur_pos%size
+if(posX==0): posX = size end
+posY = ceil(cur_pos/size)
+
+actual_dx = -dist*(size-1)/2 + (posX-1)*dist
+actual_dy= -dist*(size-1)/2 + (posY-1)*dist
+
+posX = (cur_pos+1)%size
+if(posX==0): posX = size end
+posY = ceil((cur_pos+1)/size)
+
+next_dx = -dist*(size-1)/2 + (posX-1)*dist
+next_dy= -dist*(size-1)/2 + (posY-1)*dist
+
+rel_p = [next_dx - actual_dx, next_dy - actual_dy]
+
+return rel_p
+
+end
