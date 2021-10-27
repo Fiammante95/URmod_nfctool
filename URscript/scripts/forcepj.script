@@ -1,0 +1,25 @@
+def forcepj():
+
+	# estraggo il vettore delle forze e dei momenti agenti sul tcp in x,y,z rispetto al riferimento “Base”
+	force_torque = get_tcp_force()
+
+	# isolo forze e momenti
+	force_B = p[ force_torque[0], force_torque[1], force_torque[2], 0, 0, 0 ]
+	torque_B = p[ force_torque[3], force_torque[4], force_torque[5], 0, 0, 0 ]
+
+	# estraggo il vettore rotazione del tcp (“Tool”) rispetto al riferimento “Base”. 
+	# di fatto, scarto l’informazione relativa allo spostamento (in x,y,z) rispetto alla Base 
+	# perchè mi interessano solo le rotazioni, essendo get_tcp_force già spostato sul tcp rispetto alla Base.
+	tcp = get_actual_tcp_pose()
+	rotation_BT = p[ 0, 0, 0, tcp[3], tcp[4], tcp[5] ]
+
+	# calcolo, rispettivamente, forze e momenti 
+	force_T = pose_trans( pose_inv(rotation_BT), force_B )
+	torque_T = pose_trans( pose_inv(rotation_BT), torque_B )
+
+	# assemblo il vettore forze del tcp rispetto al riferimento del Tool
+	force_torque_T = p[ force_T[0], force_T[1], force_T[2], torque_T[0], torque_T[1], torque_T[2] ]
+	
+	return force_torque_T
+
+end
