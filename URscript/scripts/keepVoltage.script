@@ -1,4 +1,4 @@
-thread keepVoltage():
+def keepVoltage():
 
 		i = 0
 		# invia 3 "impulsi" alla macchina per assicurarsi che il tool abbia tensione
@@ -8,8 +8,4 @@ thread keepVoltage():
 			i = i + 1
 		end
 
-		return False
-
 end
-
-thrd = run keepVoltage()
