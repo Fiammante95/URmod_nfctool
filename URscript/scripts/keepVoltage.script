@@ -14,7 +14,9 @@ thread keepVoltage():
 			i = i + 1
 		end
 
-		#attende fino al prossimo ciclo
+		# attende fino al prossimo ciclo. qui basta settare un tempo maggiore del tempo ciclo
+		# perchè a ogni ciclo il programma principale può chiamare questa thread
+		# prima di eseguire una nuova istanza, chiude quella vecchia
 		sleep(75)
 	end
 	return exitcondition
