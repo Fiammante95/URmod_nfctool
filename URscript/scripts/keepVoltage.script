@@ -1,11 +1,22 @@
 thread keepVoltage():
 
+	# condizione di uscita, può diventare vera in caso di errore
 	exitcondition = False
-	while !exitcondition:
-		set_tool_voltage(24)
-		sleep(60)
-	end
 
-	return !exitcondition
+	while exitcondition == False:
+
+		i = 0
+
+		# invia 3 "impulsi" alla macchina per assicurarsi che il tool abbia tensione
+		while i < 3:
+			set_tool_voltage(24)
+			sleep(0.24)
+			i = i + 1
+		end
+
+		#attende fino al prossimo ciclo
+		sleep(75)
+	end
+	return exitcondition
 end
 	
