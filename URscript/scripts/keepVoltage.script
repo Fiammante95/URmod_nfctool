@@ -1,0 +1,11 @@
+thread keepVoltage():
+
+	exitcondition = False
+	while !exitcondition:
+		set_tool_voltage(24)
+		sleep(60)
+	end
+
+	return !exitcondition
+end
+	
