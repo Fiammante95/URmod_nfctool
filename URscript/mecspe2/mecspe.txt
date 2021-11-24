@@ -1,0 +1,198 @@
+ Program
+   Init Variables
+   BeforeStart
+     <empty>
+   Robot Program
+     Script: relPose.script
+     apprendimento≔ False 
+     pos_approccio≔get_actual_tcp_pose()
+     Script: totf.script_bak
+     Script: tcpMov.script
+     Script: calcItemPosition.script_bak
+     Script: pickPalletItem.script
+     Script: stockUpdate.script_bak
+     Script: ini_grid.script_bak.script
+     Script: ini_defs.script
+     Script: ini_types.script_bak_bak
+     Script: ini_stocks2.script
+     Script: gen_tcp_grid.script
+     If nCycle≟0
+       Set ventosa_off=On
+       Set ventosa_on=Off
+       Set dostore_on_off=Off
+       Missing: Close Gripper
+       pallTypes≔ini_types()
+       nfc_ck_override≔ False 
+       grid≔ini_grid()
+       pallDefs≔ini_defs()
+       pallStocks≔ini_stocks(pallDefs,pallTypes)
+       'Popup'
+       ghr≔ghr
+       nfc≔nfc
+       ant≔ant
+       col≔col
+       dump≔dump
+       nCycle≔1
+       nfc_check≔ False 
+       ghr_check≔ False 
+       cmp_x_in≔3
+       cmp_y_in≔0
+       cmp_x_out≔0
+       cmp_y_out≔0
+       cmp_x≔ False 
+       cmp_y≔ False 
+       'lastpick≔0'
+       Wait: 1.0
+     MoveJ
+       appr_pall_ghr
+       item≔ghr
+       pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+       lastpick≔pick
+       XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+       p_pall≔relPose(piano_moduli_const,p[(XY[0]+cmp_x_in)/1000,(XY[1]+cmp_y_in)/1000,0.0,0.0,0.0,0.0])
+       p_pall
+     MoveL
+       Punto_percor_18
+       Missing: Open Gripper
+       Punto_percor_19
+       'Direction: origine_moduli Z-'
+     MoveL
+       Punto_percor_21
+     'If cmp_x≟ True '
+     'If cmp_y≟ True '
+     nfc_check≔ False 
+     Loop nfc_check≟ False 
+       MoveJ
+         tcp_ventosaX
+         'tcp_ventosaY_s'
+         item≔nfc
+         pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+         'Popup'
+         XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+         p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+         'Popup'
+         p_pall
+       MoveL
+         Punto_percor_22
+         Set ventosa_off=Off
+         Set ventosa_on=On
+         'MoveJ'
+       MoveL
+         Punto_percor_24
+         Wait: 2.0
+         Punto_percor_25
+       MoveL
+         Punto_percor_26
+       'pallStocks≔stockUpdate(pick,pallStocks)'
+       MoveJ
+         Punto_percors_1
+       MoveL
+         Punto_percors_9
+       MoveL
+         Punto_percor_27
+         If nfc_ck_override≟ True 
+           nfc_check≔ True 
+         Loop 5 times
+           Wait: 0.5
+           If sensor_detected≟ True 
+             nfc_check≔ True 
+         Punto_percors_9
+       MoveJ
+         Punto_percors_1
+         tcp_ventosaX
+         'tcp_ventosaY_s'
+         item≔nfc
+         pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+         'Popup'
+         XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+         p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+         'Popup'
+         p_pall
+       MoveL
+         Punto_percor_22
+         'MoveJ'
+       MoveL
+         Punto_percor_24
+         Set ventosa_off=On
+         Set ventosa_on=Off
+         Wait: 2.0
+         Punto_percor_25
+       MoveL
+         Punto_percor_26
+     MoveJ
+       tcp_pinza_s
+       pinz_col_up
+       pinz_col_in1
+       Missing: Close Gripper
+       pinz_col_out
+       'pinz_col_up'
+       Punto_percors_2
+       'Missing: Open Gripper'
+       tcp_pinza_s
+     MoveJ
+       tcp_coll_s
+       Punto_percors_7
+       Punto_percors_8
+       'tcp_colla'
+     MoveL
+       Punto_percors_8
+       arco01
+       Set dostore_on_off=On
+       Wait: 0.5
+       Punto_percors_8
+       Set dostore_on_off=Off
+     MoveJ
+       tcp_coll_s
+     MoveJ
+       'tcp_ventosaY_s'
+       tcp_pressa_s
+       Punto_percor_11
+       Wait: 5.0
+       tcp_pressa_s
+     MoveJ
+       tcp_pinza_s
+       pinz_col_up
+       pinz_col_out
+       pinz_col_in
+       Missing: Open Gripper
+       pinz_col_up
+       'pinz_col_up'
+       'Punto_percors_2'
+       'Missing: Open Gripper'
+       tcp_pinza_s
+     MoveL
+       Punto_percors_3
+     'MoveJ'
+     MoveL
+       Punto_percors_4
+       Missing: Close Gripper
+       Punto_percors_5
+     'If cmp_x≟ True '
+     'If cmp_y≟ True '
+     'Popup'
+   inizializzazione
+     <empty>
+   prel_ghr_pall
+     If apprendimento≟ True 
+       MoveJ
+         appr_pall_ghr
+     Else
+       MoveJ
+         pos_approccio = calc_rel_pose()
+         pos_approccio
+     MoveL
+       Waypoint_1
+     MoveL
+       Waypoint_2
+       tool()
+       Waypoint_3
+     MoveL
+       Waypoint_4
+   prel_nfc_pall
+     <empty>
+   depos_ghr_pall
+     <empty>
+   depos_nfc_pall
+     <empty>
+   depos_nfc_ant
+     <empty>
