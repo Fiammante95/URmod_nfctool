@@ -1,0 +1,625 @@
+def mecspe():
+  step_count_76348bc5_3e9b_4c10_b6e6_2ef08ca7e0f8 = 0.0
+  thread Step_Counter_Thread_38489e54_2bd2_4749_a4fc_d79f780bf2f3():
+    while (True):
+      step_count_76348bc5_3e9b_4c10_b6e6_2ef08ca7e0f8 = step_count_76348bc5_3e9b_4c10_b6e6_2ef08ca7e0f8 + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_38489e54_2bd2_4749_a4fc_d79f780bf2f3()
+  set_gravity([8.503688472232543E-16, 6.943788591251896, 6.943788591251898])
+  set_tool_voltage(0)
+  set_safety_mode_transition_hardness(1)
+  set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+  set_payload(2.1)
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 0)
+  set_tool_analog_input_domain(1, 0)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_input_actions_to_default()
+  global Piano_Carrello=p[0.15738038194676504,0.34804679499613556,-0.10180660081110104,-0.604770547029434,0.6135130099633843,1.4699264996051509]
+  global Piano_Inclinato=p[0.24163290852284977,0.484348843812812,-0.08183038406600258,-0.13450397856501406,0.1337107555826035,1.5511152546959441]
+  global piano_moduli=p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034]
+  # begin: URCap Installation Node
+  #   Source: SCHUNK End-of-Arm Modular System for UR, 1.0.0.SNAPSHOT, SCHUNK GmbH & Co.
+  #   Type: SCHUNK EOA Modular System
+  set_tool_voltage(24)
+  def EoaGrpOpen():
+  set_tool_digital_out(1, False)
+  sleep(0.015)
+  set_tool_digital_out(0, True)
+  sleep(0.5)
+  end
+  def EoaGrpClose():
+  set_tool_digital_out(0, False)
+  sleep(0.015)
+  set_tool_digital_out(1, True)
+  sleep(0.5)
+  end
+  # end: URCap Installation Node
+  global XY=[0,0]
+  global ant=3
+  global col=4
+  global dump=5
+  global ghr=2
+  global nCycle=0
+  global nfc=1
+  global pallStocks=[16,16,16,40,16,16,16,40,16,16,16,40,16,40,0,0,0,0,0,0,0,0,0,0]
+  global pick=[0,0]
+  while (True):
+    $ 2 "Programma Robot"
+    $ 3 "Script: relPose.script"
+    def relPose(FeaturePose,vect):
+    
+        # FeaturePose is the pose for the feature
+        # vect = p[0.1, 0, 0, 0, 0, 0] makes us move 10cm in the X direction of the feature
+        # credits: https://forum.universal-robots.com/t/move-tcp-relative-to-feature/15492
+    
+       PoseRelativeToFeature = pose_trans(pose_inv(FeaturePose), get_actual_tcp_pose())
+       MoveTCPRelativeToFeature = pose_add(PoseRelativeToFeature, vect)
+       return pose_trans(FeaturePose, MoveTCPRelativeToFeature)
+    
+    end
+    $ 4 "Script: totf.script_bak"
+    def totf(tcpf):
+    
+        return sqrt(tcpf[0]*tcpf[0]+tcpf[1]*tcpf[1]+tcpf[2]*tcpf[2]+tcpf[3]*tcpf[3]+tcpf[4]*tcpf[4]+tcpf[5]*tcpf[5])
+    
+    end
+    $ 5 "Script: tcpMov.script"
+    def tcpMov(vect):
+    
+        # FeaturePose is the pose for the feature
+        # vect = p[0.1, 0, 0, 0, 0, 0] makes us move 10cm in the X direction of the feature
+        # credits: https://forum.universal-robots.com/t/move-tcp-relative-to-feature/15492
+    
+       tcp_pose = get_actual_tcp_pose()
+       return pose_add(tcp_pose, vect)
+    
+    
+    end
+    $ 6 "Script: calcItemPosition.script_bak"
+    def calcItemPosition(pick, item, pallDefs, grid, featOrigin):
+    
+        # calcola la posizione assoluta del pezzo scelto da pickPalletItem
+    
+        # nPosX è il numero di colonne
+        # nPosY è il numero di righe
+        # distX è la distanza tra colonne
+        # distY è la distanza tra righe
+        # [posX1, posY1] è la posizione del primo pezzo rispetto all'origine del pallet
+    
+        nPallet = pick[0] + 1 # numero del pallet (gli id partono da 0)
+        nItem = pick[1] + 1 # numero del pezzo
+    
+        nPosXgrid = grid[0] # numero di posizioni della giglia in X
+        distXgrid = grid[2] # distanza tra gli slot della griglia in X
+        distYgrid = grid[3] # distanza tra gli slot della griglia in Y
+    
+        pallPosX = nPallet%nPosXgrid
+        if(pallPosX==0): pallPosX = nPosXgrid end
+        pallPosY = ceil(nPallet/nPosXgrid)
+    
+        pallPosX1 = grid[4]
+        pallPosY1 = grid[5]
+    
+    
+        nPosX = pallDefs[item,0]
+        nPosY = pallDefs[item,1]
+        distX = pallDefs[item,2]
+        distY = pallDefs[item,3]
+        posX1 = pallDefs[item,4]
+        posY1 = pallDefs[item,5]
+    
+        posX = nItem%nPosX
+        if(posX==0): posX = nPosX end
+        posY = ceil(nItem/nPosX)
+    
+        # [X,Y] è la posizione del pezzo rispetto all'origine della griglia
+    
+        X=distX*(posX - 1) + posX1 + distXgrid*(pallPosX - 1) + pallPosX1
+        Y=distY*(posY - 1) + posY1 + distYgrid*(pallPosY - 1) + pallPosY1
+        xy=[X,Y]
+    
+        return xy
+    
+     end
+    $ 7 "Script: pickPalletItem.script"
+    def pickPalletItem(type, pallDefs, pallTypes, pallStocks):
+    
+      # seleziona un pezzo sulla griglia, noti il tipo di pezzo e lo stato della griglia
+    
+      # lo script funziona finché le variabili del robot non vengono resettate. Tuttavia, anche
+      # in caso di riavvio, è possibile scrivere manualmente le info sulla griglia e lo stock
+      # all'inizio del programma, così da 'insegnare' al robot dove farlo
+      # riprendere
+    
+      iPallet = 0 # inizializzo l'id del pallet
+    
+      while iPallet < length(pallStocks):
+    
+        if pallTypes[iPallet] == type and pallStocks[iPallet] > 0 :
+    
+          nItems = pallStocks[iPallet] # numero di pezzi nello stock del pallet iesimo
+    
+          nPosX = pallDefs[type,0] # numero di posizioni lungo x, come definito per il pallet di tipo "type"
+          nPosY = pallDefs[type,1] # numero di posizioni lungo y, come definito per il pallet di tipo "type"
+    
+          stockMax = nPosX*nPosY
+          iItem = stockMax - nItems # id del pezzo
+    
+          pick = [iPallet,iItem]
+    
+          # pick = [id del pallet, id del pezzo]
+    
+          return pick
+     end
+    iPallet = iPallet + 1
+    end
+    end
+    $ 8 "Script: stockUpdate.script_bak"
+    def stockUpdate(pick,stock):
+    
+        # simple function that ingests the output of pickItem and returns the
+        # modified stock array. just so to avoid using global variables and
+        # multi-dimensional arrays
+    
+        i = pick[0]
+        stock[i] = stock[i] - 1
+        return stock
+    
+    
+    end
+    $ 9 "Script: ini_grid.script_bak.script"
+    def ini_grid():
+    
+        # grid = [nPallPosX, nPallPosY, distPallX, distPallY, pallPosX1, pallPosY1, pallPosZ1]
+        # la struttura e' del tutto analoga in logica con quella espressa in defs
+        grid = [4, 4, 90, 90, 10, 20, 6]
+        return grid
+    end
+    $ 10 "Script: ini_defs.script"
+    def ini_defs():
+    
+        # definition = [nPosX,nPosY,distX,distY,posX1,posY1,posZ1]
+    
+        # nPosX è il numero di colonne
+        # nPosY è il numero di righe
+        # distX è la distanza tra colonne
+        # distY è la distanza tra righe
+        # [posX1, posY1] è la posizione del primo pezzo rispetto all'origine del pallet
+        # posZ1 e' la posizione che deve raggiungere il TCP lungo asse Z, che sarebbe asse verticale
+    
+        defs = [
+            [0, 0, 0, 0, 0, 0, 0], # slot vuoto
+            [4, 10, 18, 8, 11.5, 24, 9.1], # pallet nfc
+            [4, 4, 21, 21, 12, 12, 50], # pallet ghiere
+            [1, 1, 0, 0, 132.06, 44, 16.05], # stazione antenna
+            [1, 2, 0, 40, 20.256, 24, 27.85], # stazione incollaggio
+            [1, 1, 0, 0, 40, 40, 50] # cestino
+        ]
+        return defs
+    end
+    $ 11 "Script: ini_types.script_bak_bak"
+    def ini_types():
+    
+        visualTypes = [
+    
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0,0,0,0],
+            [0,0,0,0],
+            [0,ghr,0,nfc],
+            [0,0,0,0]
+    
+        ]
+    
+    # purtroppo fare questa array vuota di dimensione (righe)x(colonne) per aggirare le limitazioni di UR
+    # bisogna ricordarsi di cambiare questa dichiarazione di types se si cambia dimensione griglia
+    
+         types = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    
+        iii = 0
+        s = size(visualTypes)
+        i = 0
+        while i < s[0]:
+    
+            ii=0
+            while ii < s[1]:
+    
+                types[iii] = visualTypes[s[0]-1-i,ii]
+                ii = ii + 1
+                iii = iii + 1
+            end
+        i = i + 1
+        end
+        return types
+    end
+    $ 12 "Script: ini_stocks2.script"
+    def ini_stocks(defs, types):
+    
+        global f = -1 # usa questo carattere per inizializzare automaticamente pallet pieni
+    
+        visualStocks = [
+    
+            [f, f, f, f],
+            [f, f, f, f],
+            [f, f, f, f],
+            [f, f, f, f],
+            [f, f, f, f],
+            [f ,f, f, f]
+    
+        ]
+    
+    # purtroppo fare questa array vuota di dimensione (righe)x(colonne) per aggirare le limitazioni di UR
+    # bisogna ricordarsi di cambiare questa dichiarazione di types se si cambia dimensione griglia
+    
+         stocks = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    
+        iii = 0
+        s = size(visualStocks)
+        i = 0
+        while i < s[0]:
+    
+            ii=0
+            while ii < s[1]:
+                if visualStocks[s[0]-1-i,ii] == f:
+                    nPosX = defs[types[iii], 0]
+                    nPosY = defs[types[iii], 1]
+                    stocks[iii] = nPosX*nPosY
+                else:
+    
+                    stocks[iii] = visualStocks[s[0]-1-i,ii]
+                end
+                ii = ii + 1
+                iii = iii + 1
+            end
+        i = i + 1
+        end
+        return stocks
+    end
+    $ 13 "Script: gen_tcp_grid.script"
+    def next_tcp_grid_pos(cur_pos,size,dist):
+    
+    # size e' la dimensione della griglia da generare,
+    # 2 significa 2x2, 3 significa 3x3 etc
+    
+    rel_p = [0,0]
+    tcpp = get_actual_tcp_pose()
+    
+    posX = cur_pos%size
+    if(posX==0): posX = size end
+    posY = ceil(cur_pos/size)
+    
+    actual_dx = -dist*(size-1)/2 + (posX-1)*dist
+    actual_dy= -dist*(size-1)/2 + (posY-1)*dist
+    
+    posX = (cur_pos+1)%size
+    if(posX==0): posX = size end
+    posY = ceil((cur_pos+1)/size)
+    
+    next_dx = -dist*(size-1)/2 + (posX-1)*dist
+    next_dy= -dist*(size-1)/2 + (posY-1)*dist
+    
+    rel_p = [next_dx - actual_dx, next_dy - actual_dy]
+    
+    return rel_p
+    
+    end
+    $ 14 "If nCycle≟0"
+    if (nCycle == 0):
+      $ 15 "Imposta ventosa_off=On"
+      set_standard_digital_out(1, True)
+      $ 16 "Imposta ventosa_on=Off"
+      set_standard_digital_out(0, False)
+      $ 17 "Imposta dostore_on_off=Off"
+      set_standard_digital_out(2, False)
+      # begin: URCap Program Node
+      #   Source: SCHUNK End-of-Arm Modular System for UR, 1.0.0.SNAPSHOT, SCHUNK GmbH & Co.
+      #   Type: Close Gripper
+      $ 18 "Close Gripper"
+      EoaGrpClose()
+      # end: URCap Program Node
+      $ 19 "pallTypes≔ini_types()"
+      global pallTypes=ini_types()
+      $ 20 "nfc_ck_override≔ False "
+      global nfc_ck_override=  False  
+      $ 21 "grid≔ini_grid()"
+      global grid=ini_grid()
+      $ 22 "pallDefs≔ini_defs()"
+      global pallDefs=ini_defs()
+      $ 23 "pallStocks≔ini_stocks(pallDefs,pallTypes)"
+      global pallStocks=ini_stocks(pallDefs,pallTypes)
+      $ 25 "ghr≔ghr"
+      global ghr=ghr
+      $ 26 "nfc≔nfc"
+      global nfc=nfc
+      $ 27 "ant≔ant"
+      global ant=ant
+      $ 28 "col≔col"
+      global col=col
+      $ 29 "dump≔dump"
+      global dump=dump
+      $ 30 "nCycle≔1"
+      global nCycle=1
+      $ 31 "nfc_check≔ False "
+      global nfc_check=  False  
+      $ 32 "ghr_check≔ False "
+      global ghr_check=  False  
+      $ 33 "cmp_x_in≔3"
+      global cmp_x_in=3
+      $ 34 "cmp_y_in≔0"
+      global cmp_y_in=0
+      $ 35 "cmp_x_out≔0"
+      global cmp_x_out=0
+      $ 36 "cmp_y_out≔0"
+      global cmp_y_out=0
+      $ 37 "cmp_x≔ False "
+      global cmp_x=  False  
+      $ 38 "cmp_y≔ False "
+      global cmp_y=  False  
+      $ 40 "Attendere: 1.0"
+      sleep(1.0)
+    end
+    $ 41 "MuoviJ"
+    $ 42 "tcp_pinza" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.141508430620, .430186145797, -.147750446182, .607032135491, -1.488165124152, -.629298923675], qnear=[-2.194843747757993, -0.6849316429477064, 1.4166243930013713, -0.7323936147265329, -0.6033701630599886, 0.7824557991326886]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 43 "item≔ghr"
+    global item=ghr
+    $ 44 "pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)"
+    global pick=pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+    $ 45 "lastpick≔pick"
+    global lastpick=pick
+    $ 46 "XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)"
+    global XY=calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+    $ 47 "p_pall≔relPose(piano_moduli_const,p[(XY[0]+cmp_x_in)/1000,(XY[1]+cmp_y_in)/1000,0.0,0.0,0.0,0.0])"
+    global p_pall=relPose(p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034],p[(XY[0]+cmp_x_in)/1000,(XY[1]+cmp_y_in)/1000,0.0,0.0,0.0,0.0])
+    $ 48 "p_pall" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(p_pall, a=1.3962634015954636, v=1.0471975511965976, r=0.004)
+    $ 49 "MuoviL"
+    $ 50 "Punto_percor_20" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movel(pose_add(get_forward_kin(), pose_sub(p[.026370684244, .450964960278, -.279359771191, .607085440723, -1.488154894360, -.629420211871], p[.027185045582, .507258675505, -.222484755978, .607141097495, -1.488143155405, -.629276815765])), a=1.2, v=0.25)
+    $ 51 "MuoviL"
+    $ 52 "Punto_percor_18" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movel(pose_add(get_forward_kin(), pose_sub(p[.022381948031, .440636071869, -.292886080891, .607320996487, -1.488187593701, -.629442719023], p[.022534456102, .452619057295, -.280860864432, .607276145020, -1.488213986606, -.629555025439])), a=0.1, v=0.05)
+    # begin: URCap Program Node
+    #   Source: SCHUNK End-of-Arm Modular System for UR, 1.0.0.SNAPSHOT, SCHUNK GmbH & Co.
+    #   Type: Open Gripper
+    $ 53 "Open Gripper"
+    EoaGrpOpen()
+    # end: URCap Program Node
+    $ 54 "Punto_percor_19" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movel(pose_add(get_forward_kin(), pose_sub(p[.022575276987, .452607035909, -.280770672427, .607338630849, -1.488195318173, -.629465401290], p[.022390678572, .440643791138, -.292893447834, .607422242121, -1.488161545891, -.629427621740])), a=0.1, v=0.05)
+    $ 96 "MuoviL"
+    $ 97 "Punto_percor_21" "breakAfter"
+    movel(pose_add(get_forward_kin(), pose_sub(p[.023398208338, .508853030281, -.223974563954, .607350606948, -1.488217440499, -.629455087457], p[.022579717910, .452616215654, -.280772177196, .607386213802, -1.488196220342, -.629409164942])), a=1.2, v=0.25)
+    $ 102 "nfc_check≔ False "
+    global nfc_check=  False  
+    $ 103 "Ciclo nfc_check≟ False "
+    while (nfc_check ==   False  ):
+      $ 104 "MuoviJ"
+      $ 105 "tcp_ventosaX" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movej(get_inverse_kin(p[.142441978580, .500566928693, -.076684548179, 1.762214619710, -.739669585744, -1.772544720268], qnear=[-2.2291505972491663, -0.6654294172870081, 1.53663969039917, -0.8705576101886194, -0.638655964528219, -0.7893994490252894]), a=1.3962634015954636, v=1.0471975511965976)
+      $ 107 "item≔nfc"
+      global item=nfc
+      $ 108 "pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)"
+      global pick=pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+      $ 110 "XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)"
+      global XY=calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+      $ 111 "p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])"
+      global p_pall=relPose(p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034],p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+      $ 113 "p_pall" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movej(p_pall, a=1.3962634015954636, v=1.0471975511965976)
+      $ 114 "MuoviL"
+      $ 115 "Punto_percor_22" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.033406722244, .563018385882, -.390380137655, 1.785457859685, -.733868522970, -1.771169622781], p[.035118279865, .689646245178, -.262532044881, 1.785274763573, -.733867490988, -1.770996114351])), a=1.0, v=0.25)
+      $ 116 "Imposta ventosa_off=Off"
+      set_standard_digital_out(1, False)
+      $ 117 "Imposta ventosa_on=On"
+      set_standard_digital_out(0, True)
+      $ 120 "MuoviL"
+      $ 121 "Punto_percor_24" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.033330234424, .555287280666, -.398137481315, 1.785553440915, -.733780883910, -1.771232068736], p[.033415001467, .563016592516, -.390375902229, 1.785472462686, -.733850377308, -1.771164548201])), a=0.1, v=0.1)
+      $ 122 "Attendere: 2.0"
+      sleep(2.0)
+      $ 123 "Punto_percor_25" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.033498977513, .565846465093, -.387471609775, 1.785644315187, -.733584217405, -1.771131691467], p[.033325484735, .555289252142, -.398146806297, 1.785599931386, -.733655199135, -1.771169106281])), a=0.1, v=0.1)
+      $ 124 "MuoviL"
+      $ 125 "Punto_percor_26" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.035219967081, .689620140468, -.262535305967, 1.785529415174, -.733702332389, -1.771103089711], p[.033483767662, .565887669071, -.387461724716, 1.785698424465, -.733646598385, -1.771234731617])), a=1.2, v=0.25)
+      $ 127 "MuoviJ"
+      $ 128 "Punto_percors_1" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movej(get_inverse_kin(p[.331541025423, .425448581379, -.023300967071, 1.762110018309, -.739780351948, -1.772643892872], qnear=[-2.5320609251605433, -0.6660645643817347, 1.3469347953796387, -0.6796024481402796, -0.941779915486471, -0.7899144331561487]), a=1.3962634015954636, v=1.0471975511965976)
+      $ 129 "MuoviL"
+      $ 130 "Punto_percors_9" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(p[.334201516403, .613623298758, -.237913709233, 1.761876086224, -.739799080521, -1.772663896258], a=0.6, v=0.2)
+      $ 131 "MuoviL"
+      $ 132 "Punto_percor_27" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(p[.333934120115, .593030078679, -.258696643369, 1.762040231240, -.739717868811, -1.772613023191], a=0.1, v=0.05)
+      $ 133 "If nfc_ck_override≟ True "
+      if (nfc_ck_override ==   True  ):
+        $ 134 "nfc_check≔ True "
+        global nfc_check=  True  
+      end
+      $ 135 "Ripetere 5 X volte"
+      Ciclo_4 = 0
+      while (Ciclo_4 < 5):
+        $ 136 "Attendere: 0.5"
+        sleep(0.5)
+        $ 137 "If sensor_detected≟ True "
+        if (get_standard_digital_in(1) ==   True  ):
+          $ 138 "nfc_check≔ True "
+          global nfc_check=  True  
+        end
+        Ciclo_4 = Ciclo_4 + 1
+      end
+      $ 139 "Punto_percors_9" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(p[.334201516403, .613623298758, -.237913709233, 1.761876086224, -.739799080521, -1.772663896258], a=0.1, v=0.05)
+      $ 140 "MuoviJ"
+      $ 141 "Punto_percors_1" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movej(get_inverse_kin(p[.331541025423, .425448581379, -.023300967071, 1.762110018309, -.739780351948, -1.772643892872], qnear=[-2.5320609251605433, -0.6660645643817347, 1.3469347953796387, -0.6796024481402796, -0.941779915486471, -0.7899144331561487]), a=1.3962634015954636, v=1.0471975511965976)
+      $ 142 "tcp_ventosaX" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movej(get_inverse_kin(p[.142441978580, .500566928693, -.076684548179, 1.762214619710, -.739669585744, -1.772544720268], qnear=[-2.2291505972491663, -0.6654294172870081, 1.53663969039917, -0.8705576101886194, -0.638655964528219, -0.7893994490252894]), a=1.3962634015954636, v=1.0471975511965976)
+      $ 144 "item≔nfc"
+      global item=nfc
+      $ 145 "pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)"
+      global pick=pickPalletItem(item,pallDefs,pallTypes,pallStocks)
+      $ 147 "XY≔calcItemPosition(pick, item,pallDefs, grid,piano_moduli)"
+      global XY=calcItemPosition(pick, item,pallDefs, grid,piano_moduli)
+      $ 148 "p_pall≔relPose(piano_moduli_const,p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])"
+      global p_pall=relPose(p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034],p[XY[0]/1000,XY[1]/1000,0.0,0.0,0.0,0.0])
+      $ 150 "p_pall" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movej(p_pall, a=1.3962634015954636, v=1.0471975511965976)
+      $ 151 "MuoviL"
+      $ 152 "Punto_percor_22" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.033406722244, .563018385882, -.390380137655, 1.785457859685, -.733868522970, -1.771169622781], p[.035118279865, .689646245178, -.262532044881, 1.785274763573, -.733867490988, -1.770996114351])), a=1.0, v=0.25)
+      $ 155 "MuoviL"
+      $ 156 "Punto_percor_24" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.033330234424, .555287280666, -.398137481315, 1.785553440915, -.733780883910, -1.771232068736], p[.033415001467, .563016592516, -.390375902229, 1.785472462686, -.733850377308, -1.771164548201])), a=0.1, v=0.1)
+      $ 157 "Imposta ventosa_off=On"
+      set_standard_digital_out(1, True)
+      $ 158 "Imposta ventosa_on=Off"
+      set_standard_digital_out(0, False)
+      $ 159 "Attendere: 2.0"
+      sleep(2.0)
+      $ 160 "Punto_percor_25" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.033498977513, .565846465093, -.387471609775, 1.785644315187, -.733584217405, -1.771131691467], p[.033325484735, .555289252142, -.398146806297, 1.785599931386, -.733655199135, -1.771169106281])), a=0.1, v=0.1)
+      $ 161 "MuoviL"
+      $ 162 "Punto_percor_26" "breakAfter"
+      set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+      movel(pose_add(get_forward_kin(), pose_sub(p[.035219967081, .689620140468, -.262535305967, 1.785529415174, -.733702332389, -1.771103089711], p[.033483767662, .565887669071, -.387461724716, 1.785698424465, -.733646598385, -1.771234731617])), a=1.2, v=0.25)
+    end
+    $ 163 "MuoviJ"
+    $ 164 "tcp_pinza_s" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.326011149818, .479266965763, -.092696441938, .607580201479, -1.486765742709, -.628693747213], qnear=[-2.352646186957993, -0.4319644455261038, 0.7324943443557792, -0.2993818855919095, -0.7637422170693524, 0.7808392726056566]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 165 "pinz_col_up" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325773376452, .462541498178, -.115348522022, -.212830907045, -1.559527738623, .190774615997], qnear=[-2.315612856541769, 0.07367491722106934, 0.2532482147216797, -0.32667285600771123, -0.7280772368060511, 1.8294758796691895]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 166 "pinz_col_in1" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325228485012, .420094452856, -.158164992148, -.212714909125, -1.559567808483, .190626999186], qnear=[-2.353227202092306, -0.00873881975282842, 0.5550780296325684, -0.5463479200946253, -0.7649119536029261, 1.8297035694122314]), a=1.3962634015954636, v=1.0471975511965976)
+    # begin: URCap Program Node
+    #   Source: SCHUNK End-of-Arm Modular System for UR, 1.0.0.SNAPSHOT, SCHUNK GmbH & Co.
+    #   Type: Close Gripper
+    $ 167 "Close Gripper"
+    EoaGrpClose()
+    # end: URCap Program Node
+    $ 168 "pinz_col_out" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325373016983, .428558746253, -.163725468411, -.212596130254, -1.559581959634, .190676777215], qnear=[-2.3454745451556605, 0.03327763080596924, 0.4766983985900879, -0.5099824110614222, -0.7574675718890589, 1.8296436071395874]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 170 "Punto_percors_2" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.326040299518, .480900502235, -.148452817879, .402894540188, -1.534844754033, -.425850166899], qnear=[-2.321592632924215, -0.2006920019732874, 0.511988639831543, -0.3106725851642054, -0.7324641386615198, 1.043330192565918]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 172 "tcp_pinza_s" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.326011149818, .479266965763, -.092696441938, .607580201479, -1.486765742709, -.628693747213], qnear=[-2.352646186957993, -0.4319644455261038, 0.7324943443557792, -0.2993818855919095, -0.7637422170693524, 0.7808392726056566]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 173 "MuoviJ"
+    $ 174 "tcp_coll_s" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movej(get_inverse_kin(p[.326049273399, .390335697988, -.058732848056, 1.507272008701, -2.645215517466, .202790049416], qnear=[-2.4247244040118616, -1.2219765822040003, 1.938539981842041, -2.1700642744647425, -1.6807735602008265, 0.7407760620117188]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 175 "Punto_percors_7" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movej(get_inverse_kin(p[.326116852290, .395016199059, -.120075426115, 1.507153731563, -2.645294954726, .202786700592], qnear=[-2.418325964604513, -1.1042702833758753, 1.9716458320617676, -2.3201311270343226, -1.680725399647848, 0.7476186752319336]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 176 "Punto_percors_8" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movej(get_inverse_kin(p[.326087296439, .391560725673, -.129594316531, 1.507254474525, -2.645262159269, .202782320124], qnear=[-2.4231184164630335, -1.0899871031390589, 1.9846491813659668, -2.3479674498187464, -1.681396786366598, 0.742812991142273]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 178 "MuoviL"
+    $ 179 "Punto_percors_8" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movel(p[.326087296439, .391560725673, -.129594316531, 1.507254474525, -2.645262159269, .202782320124], a=1.2, v=0.25)
+    $ 180 "arco01" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movel(p[.314979692587, .396609864829, -.132865487706, -1.422169430917, 2.364493150158, -.968087561031], a=1.2, v=0.25)
+    $ 181 "Imposta dostore_on_off=On"
+    set_standard_digital_out(2, True)
+    $ 182 "Attendere: 0.5"
+    sleep(0.5)
+    $ 183 "Punto_percors_8" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movel(p[.326087296439, .391560725673, -.129594316531, 1.507254474525, -2.645262159269, .202782320124], a=1.2, v=0.25)
+    $ 184 "Imposta dostore_on_off=Off"
+    set_standard_digital_out(2, False)
+    $ 185 "MuoviJ"
+    $ 186 "tcp_coll_s" "breakAfter"
+    set_tcp(p[0.0,0.0,0.2,0.0,0.0,0.5236])
+    movej(get_inverse_kin(p[.326049273399, .390335697988, -.058732848056, 1.507272008701, -2.645215517466, .202790049416], qnear=[-2.4247244040118616, -1.2219765822040003, 1.938539981842041, -2.1700642744647425, -1.6807735602008265, 0.7407760620117188]), a=1.3962634015954636, v=1.0471975511965976, r=0.005)
+    $ 187 "MuoviJ"
+    $ 189 "tcp_pressa_s" "breakAfter"
+    set_tcp(p[-0.14289,-0.0825,0.045,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.324298787378, .291030789818, .176510647959, -1.401248626008, -1.064331206528, 1.385677224284], qnear=[-2.5951226393329065, -0.8143609205829065, 1.4839162826538086, -0.6680591742144983, -1.0046327749835413, -2.8845837751971644]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 190 "Punto_percor_11" "breakAfter"
+    set_tcp(p[-0.14289,-0.0825,0.045,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.324225434931, .296228122056, .067341178565, -1.396925760612, -1.051729655906, 1.384335823031], qnear=[-2.5894325415240687, -0.6285126844989222, 1.4779891967773438, -0.8382156530963343, -0.9903581778155726, -2.8891623655902308]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 191 "Attendere: 5.0"
+    sleep(5.0)
+    $ 192 "tcp_pressa_s" "breakAfter"
+    set_tcp(p[-0.14289,-0.0825,0.045,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.324298787378, .291030789818, .176510647959, -1.401248626008, -1.064331206528, 1.385677224284], qnear=[-2.5951226393329065, -0.8143609205829065, 1.4839162826538086, -0.6680591742144983, -1.0046327749835413, -2.8845837751971644]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 193 "MuoviJ"
+    $ 194 "tcp_pinza_s" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.326011149818, .479266965763, -.092696441938, .607580201479, -1.486765742709, -.628693747213], qnear=[-2.352646186957993, -0.4319644455261038, 0.7324943443557792, -0.2993818855919095, -0.7637422170693524, 0.7808392726056566]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 195 "pinz_col_up" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325773376452, .462541498178, -.115348522022, -.212830907045, -1.559527738623, .190774615997], qnear=[-2.315612856541769, 0.07367491722106934, 0.2532482147216797, -0.32667285600771123, -0.7280772368060511, 1.8294758796691895]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 196 "pinz_col_out" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325373016983, .428558746253, -.163725468411, -.212596130254, -1.559581959634, .190676777215], qnear=[-2.3454745451556605, 0.03327763080596924, 0.4766983985900879, -0.5099824110614222, -0.7574675718890589, 1.8296436071395874]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 197 "pinz_col_in" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325231644324, .416122322000, -.162783956222, -.212521736848, -1.559575625607, .190421343811], qnear=[-2.3569420019732874, -0.010176006947652638, 0.572056770324707, -0.56189471880068, -0.7685793081866663, 1.8294758796691895]), a=1.3962634015954636, v=1.0471975511965976)
+    # begin: URCap Program Node
+    #   Source: SCHUNK End-of-Arm Modular System for UR, 1.0.0.SNAPSHOT, SCHUNK GmbH & Co.
+    #   Type: Open Gripper
+    $ 198 "Open Gripper"
+    EoaGrpOpen()
+    # end: URCap Program Node
+    $ 199 "pinz_col_up" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.325773376452, .462541498178, -.115348522022, -.212830907045, -1.559527738623, .190774615997], qnear=[-2.315612856541769, 0.07367491722106934, 0.2532482147216797, -0.32667285600771123, -0.7280772368060511, 1.8294758796691895]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 203 "tcp_pinza_s" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movej(get_inverse_kin(p[.326011149818, .479266965763, -.092696441938, .607580201479, -1.486765742709, -.628693747213], qnear=[-2.352646186957993, -0.4319644455261038, 0.7324943443557792, -0.2993818855919095, -0.7637422170693524, 0.7808392726056566]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 204 "MuoviL"
+    $ 205 "Punto_percors_3" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movel(p[.025270615671, .510244926392, -.225345972421, .607003387727, -1.488193904387, -.629375616224], a=1.2, v=0.25)
+    $ 214 "MuoviL"
+    $ 215 "Punto_percors_4" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movel(pose_add(get_forward_kin(), pose_sub(p[.024445416308, .452918302174, -.283231440389, .606876126172, -1.488252697143, -.629482478622], p[.025254688728, .510240236025, -.225362753804, .607059602698, -1.488182760982, -.629390716412])), a=1.2, v=0.25)
+    # begin: URCap Program Node
+    #   Source: SCHUNK End-of-Arm Modular System for UR, 1.0.0.SNAPSHOT, SCHUNK GmbH & Co.
+    #   Type: Close Gripper
+    $ 216 "Close Gripper"
+    EoaGrpClose()
+    # end: URCap Program Node
+    $ 217 "Punto_percors_5" "breakAfter"
+    set_tcp(p[-0.005,-0.205,0.046,0.0,0.0,0.0])
+    movel(pose_add(get_forward_kin(), pose_sub(p[.025302174564, .510178473628, -.225377115960, .606969062869, -1.488165445212, -.629438714821], p[.024457944310, .452891962497, -.283235492728, .606947948721, -1.488194411296, -.629329300332])), a=1.2, v=0.25)
+  end
+end
