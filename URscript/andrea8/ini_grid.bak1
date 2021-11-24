@@ -1,7 +1,0 @@
-def ini_grid():
-    
-    # grid = [nPallPosX, nPallPosY, distPallX, distPallY, pallPosX1, pallPosY1, pallPosZ1]
-    # la struttura e' del tutto analoga in logica con quella espressa in defs
-    grid = [4, 4, 90, 90, 10, 20, 6]
-    return grid
-end

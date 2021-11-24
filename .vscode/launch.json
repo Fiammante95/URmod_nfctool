@@ -29,6 +29,16 @@
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/Fiammante/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (without uploading)",
+            "executable": "d:/Documents/GitHub/URmod_nfctool/.pio/build/uno/firmware.elf",
+            "projectEnvName": "uno",
+            "toolchainBinDir": "C:/Users/Fiammante/.platformio/packages/toolchain-atmelavr/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "loadMode": "manual"
         }
     ]
 }

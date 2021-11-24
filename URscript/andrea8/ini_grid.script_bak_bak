@@ -1,6 +1,0 @@
-def ini_grid():
-    
-    
-    grid = [4, 4, 90, 90, 10, 20]
-    return grid
-end
