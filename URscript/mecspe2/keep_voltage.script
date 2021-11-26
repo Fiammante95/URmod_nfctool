@@ -1,0 +1,11 @@
+def fun_tens_utensile():
+
+	i = 0
+	# invia 3 "impulsi" alla macchina per assicurarsi che il tool abbia tensione
+	while i < 3:
+		set_tool_voltage(24)
+		sleep(0.24)
+		i = i + 1
+	end
+
+end

@@ -1,0 +1,34 @@
+def ini_layout(): 
+    
+    visualLayout = [
+
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,ghr,0,chp],
+        [0,0,0,0]
+        
+    ]
+
+# purtroppo fare questa array vuota di dimensione (righe)x(colonne) per aggirare le limitazioni di UR
+# bisogna ricordarsi di cambiare questa dichiarazione di types se si cambia dimensione griglia
+
+     layout = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    
+    iii = 0
+    s = size(visualLayout)
+    i = 0
+    while i < s[0]:
+
+        ii=0
+        while ii < s[1]:
+
+            layout[iii] = visualLayout[s[0]-1-i,ii]
+            ii = ii + 1
+            iii = iii + 1
+        end
+    i = i + 1
+    end
+    return layout
+end

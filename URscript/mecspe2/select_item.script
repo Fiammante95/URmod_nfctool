@@ -1,0 +1,40 @@
+def select_module_seat(type, properties, layout, stocks):
+
+  if type < 0
+      request_integer_from_primary_client("Tipo di oggetto selezionato non specificato. specificare oggetto")
+  end
+
+
+  # seleziona un pezzo sulla griglia, noti il tipo di pezzo e lo stato della griglia
+
+  # lo script funziona finché le variabili del robot non vengono resettate. Tuttavia, anche
+  # in caso di riavvio, è possibile scrivere manualmente le info sulla griglia e lo stock
+  # all'inizio del programma, così da 'insegnare' al robot dove farlo
+  # riprendere
+
+  iPallet = 0 # inizializzo l'id del pallet
+
+  while iPallet < length(layout):
+
+    if layout[iPallet] == type and stocks[iPallet] > 0 :
+      
+      nItems = stocks[iPallet] # numero di pezzi nello stock del pallet iesimo
+
+      nPosX = properties[type,0] # numero di posizioni lungo x, come definito per il pallet di tipo "type"
+      nPosY = properties[type,1] # numero di posizioni lungo y, come definito per il pallet di tipo "type"
+
+      stockMax = nPosX*nPosY
+      iItem = stockMax - nItems # id del pezzo
+
+      nPallet = iPallet + 1
+      nItem = iItem + 1
+
+      nModuloPosto = [nPallet,nItem]
+
+      # nModuloPosto = [numero del pallet, numero del posto sul pallet]
+
+      return nModuloPosto
+ end
+iPallet = iPallet + 1
+end
+end

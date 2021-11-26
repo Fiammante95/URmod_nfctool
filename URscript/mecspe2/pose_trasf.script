@@ -1,0 +1,7 @@
+def pose_trasf(pose, feature, vect):
+
+   PoseRelativeToFeature = pose_trans(pose_inv(feature), pose)
+   MoveTCPRelativeToFeature = pose_add(PoseRelativeToFeature, vect)
+   return pose_trans(feature, MoveTCPRelativeToFeature)
+
+end

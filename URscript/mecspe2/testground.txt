@@ -1,0 +1,13 @@
+ Program
+   Robot Program
+     Script: relPose.script
+     Script: pose_to_position.script
+     Script: pose_trasf.script
+     var_2≔'ask'
+     MoveJ
+       Waypoint_1
+       var_1≔pose_trasf(Waypoint_1,piano_moduli_const,p[0.1,0,0,0,0,0])
+       var_1
+       Waypoint_2
+       var_1≔pose_to_position(Waypoint_1,piano_moduli_const,p[0.1-0.07,-0.03,0.4,0,0,0])
+       var_1

@@ -1,80 +1,64 @@
  Program
    Init Variables
    BeforeStart
-     Script: relPose.script
-     Script: totf.script_bak
+     Script: calc_pose_to_position.script
+     Script: calc_item_position.script
+     Script: calc_compens_pos.script
      Script: tcpMov.script
      Script: gen_tcp_grid.script
-     Script: stockUpdate.script_bak
-     Script: pickPalletItem.script
-     Script: calcItemPosition.script_bak
-     Script: ini_grid.script_bak.script
-     Script: ini_defs.script
-     Script: ini_types.script_bak_bak
-     Script: ini_stocks2.script
-     pos_approccio≔get_actual_tcp_pose()
+     Script: stock_update.script
+     Script: select_module_seat.script
+     Script: ini_grid.script
+     Script: ini_properties.script
+     Script: ini_layout.script
+     Script: ini_stocks.script
+     Script: fun_tens_utensile.script
+     Script: ini_var.script
+     pose_apprend≔get_actual_tcp_pose()
      statoPinza≔0
      statoGhiera≔0
      statoChip≔0
-     If nCycle≟0
-       Set ventosa_off=On
-       Set ventosa_on=Off
-       Set dostore_on_off=Off
-       'Missing: Close Gripper'
-       pallTypes≔ini_types()
-       nfc_ck_override≔ False 
-       grid≔ini_grid()
-       pallDefs≔ini_defs()
-       pallStocks≔ini_stocks(pallDefs,pallTypes)
-       'Popup'
-       ghr≔ghr
-       nfc≔nfc
-       ant≔ant
-       col≔col
-       dump≔dump
-       nCycle≔1
-       nfc_check≔ False 
-       ghr_check≔ False 
-       cmp_x_in≔3
-       cmp_y_in≔0
-       cmp_x_out≔0
-       cmp_y_out≔0
-       cmp_x≔ False 
-       cmp_y≔ False 
-       'lastpick≔0'
-       Wait: 1.0
+     compens≔p[0,0,0,0,0,0]
+     Set DO_ventosaOff=On
+     Set DO_ventosaOn=Off
+     Set DO_dosaOnOff=Off
+     layout≔ini_layout()
+     bypassVerifChp≔ False 
+     grid≔ini_grid()
+     properties≔ini_properties()
+     stock≔ini_stocks(properties,layout)
+     nCycle≔1
+     chp_check≔ False 
+     fun_tens_utensile()
+     Wait: 1.0
+     testing≔ True 
+     timer_1: Start
+     apprendimento≔ False 
    Robot Program
-     apprendimento≔ True 
-     item≔ghr
-     pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
-     lastpick≔pick
-     Call prel_ghr_pall
-     statoGhiera≔1
-     Call depo_ghr_col
-     statoGhiera≔2
-     nfc_check≔ False 
-     Loop nfc_check≟ False 
-       item≔nfc
-       pick≔pickPalletItem(item,pallDefs,pallTypes,pallStocks)
-       Call prel_nfc_pall
-       statoChip≔1
-       pallStocks≔stockUpdate(pick,pallStocks)
-       MoveJ
-         Punto_percors_1
-       Call depo_nfc_ant
-       If nfc_check≟ True 
-         Call dosa_ades_col
-         Call pressa_nfc_col
-       Else
-         Call depo_ghr_col
+     If testing≟ True 
+       Call prel_ghr_pall
+     'Else'
+   Thread_1
+     If timer_1>4
+       timer_1: Reset
+       fun_tens_utensile()
+       timer_1: Start
    prel_ghr_pall
+     oggetto≔ghr
+     pose_apprend≔pose_appPallGhr
      If apprendimento≟ True 
        MoveJ
-         appr_pall_ghr
+         pose_appPallGhr
+         modulo≔'Specificare il numero di modulo usato per l'apprendimento'
+         compens≔calc_compens_pos(oggetto,properties,grid,modulo,piano_moduli_const,pose_apprend)
+         Popup
      Else
        MoveJ
-         'pos_approccio = calc_rel_pose()'
-         pos_approccio
+         compens≔p[0,0,0,0,0,0]
+         nModuloPosto≔select_module_seat(oggetto,properties,layout,stock)
+         posizione≔calc_item_position(oggetto,properties,grid,nModuloPosto[0],nModuloPosto[1],compens)
+         pose_pallettiz≔calc_pose_to_position(pose_apprend, piano_moduli_const, posizione)
+         pose_pallettiz
      MoveL
        Waypoint_1
      MoveL
@@ -86,11 +70,11 @@
    prel_ghr_col
      If apprendimento≟ True 
        MoveJ
-         appr_pall_ghr
+         pose_appPallGhr
      Else
        MoveJ
          'pos_approccio = calc_rel_pose()'
-         pos_approccio
+         pose_apprend
      MoveL
        Waypoint_1
      MoveL
@@ -99,19 +83,19 @@
        Waypoint_3
      MoveL
        Waypoint_4
-   prel_nfc_pall
+   prel_chp_pall
      If apprendimento≟ True 
        MoveJ
          tcp_ventosaX
      Else
        MoveJ
          'pos_approccio = calc_rel_pose()'
-         pos_approccio
+         pose_apprend
      MoveL
        Punto_percor_22
      MoveL
-       Set ventosa_off=Off
-       Set ventosa_on=On
+       Set DO_ventosaOff=Off
+       Set DO_ventosaOn=On
        Punto_percor_24
        Wait: 2.0
        Punto_percor_25
@@ -126,41 +110,44 @@
      Else
        MoveJ
          'pos_approccio = calc_rel_pose()'
-         pos_approccio
-   depo_nfc_pal
+         pose_apprend
+   depo_chp_pal
      If apprendimento≟ True 
        MoveJ
          tcp_ventosaX
      Else
        MoveJ
          'pos_approccio = calc_rel_pose()'
-         pos_approccio
+         pose_apprend
      MoveL
        Punto_percor_22
      MoveL
-       Set ventosa_off=On
-       Set ventosa_on=Off
+       Set DO_ventosaOff=On
+       Set DO_ventosaOn=Off
        Punto_percor_24
        Wait: 2.0
        Punto_percor_25
      MoveL
        Punto_percor_26
-   depo_nfc_ant
+   seq_chp_ant
      If apprendimento≟ True 
        MoveJ
          Punto_percors_9
      Else
        MoveJ
          'pos_approccio = calc_rel_pose()'
-         pos_approccio
+         pose_apprend
      MoveL
        Waypoint_5
-       If nfc_ck_override≟ True 
-         nfc_check≔ True 
-       Loop 5 times
-         Wait: 0.5
-         If sensor_detected≟ True 
-           nfc_check≔ True 
+       If bypassVerifChp≟ True 
+         chp_check≔ True 
+       ElseIf DI_antennaOn≟ False 
+         chp_check≔'L'antenna nfc non risponde. Si prega di confermare la funzionalita' del sensore'
+       Else
+         Loop 5 times
+           Wait: 0.5
+           If DI_chpVerif≟ True 
+             chp_check≔ True 
        Waypoint_6
    depo_ghr_col
      MoveJ
@@ -181,10 +168,10 @@
      MoveL
        Punto_percors_8
        arco01
-       Set dostore_on_off=On
+       Set DO_dosaOnOff=On
        Wait: 0.5
        Punto_percors_8
-       Set dostore_on_off=Off
+       Set DO_dosaOnOff=Off
      MoveJ
        tcp_coll_s
    pressa_nfc_col

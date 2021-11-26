@@ -1,0 +1,3 @@
+def calc_compens_pos(grid, module, item, def, posAppr)
+
+end

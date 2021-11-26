@@ -1,0 +1,4 @@
+def calc_compens_pos(grid, module, item, def, posAppr)
+
+	compens = p[0,0,0,0,0,0]
+end

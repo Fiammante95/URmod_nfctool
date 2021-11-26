@@ -1,0 +1,75 @@
+def testground():
+  step_count_55f81367_ec5e_4dfe_aa3c_6708586ea5ef = 0.0
+  thread Step_Counter_Thread_57d29c5d_9163_4b83_b697_f105cdff3222():
+    while (True):
+      step_count_55f81367_ec5e_4dfe_aa3c_6708586ea5ef = step_count_55f81367_ec5e_4dfe_aa3c_6708586ea5ef + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_57d29c5d_9163_4b83_b697_f105cdff3222()
+  set_gravity([8.503688472232543E-16, 6.943788591251896, 6.943788591251898])
+  set_tool_voltage(0)
+  set_tcp(p[0.0475,0.0,0.045,0.0,0.0,0.0])
+  set_payload(2.1)
+  set_safety_mode_transition_hardness(1)
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 0)
+  set_tool_analog_input_domain(1, 0)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_input_actions_to_default()
+  global Piano_Carrello=p[0.15738038194676504,0.34804679499613556,-0.10180660081110104,-0.604770547029434,0.6135130099633843,1.4699264996051509]
+  global Piano_Inclinato=p[0.24163290852284977,0.484348843812812,-0.08183038406600258,-0.13450397856501406,0.1337107555826035,1.5511152546959441]
+  global piano_moduli=p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034]
+  while (True):
+    $ 1 "Robot Program"
+    $ 2 "Script: relPose.script"
+    def relPose(FeaturePose,vect):
+    
+        # FeaturePose is the pose for the feature
+        # vect = p[0.1, 0, 0, 0, 0, 0] makes us move 10cm in the X direction of the feature
+        # credits: https://forum.universal-robots.com/t/move-tcp-relative-to-feature/15492
+    
+       PoseRelativeToFeature = pose_trans(pose_inv(FeaturePose), get_actual_tcp_pose())
+       MoveTCPRelativeToFeature = pose_add(PoseRelativeToFeature, vect)
+       return pose_trans(FeaturePose, MoveTCPRelativeToFeature)
+    
+    end
+    $ 3 "Script: pose_to_position.script"
+    def calc_pose_to_position(pose, feature, position):
+    
+       PoseRelativeToFeature = pose_trans(pose_inv(feature), pose)
+    
+       diff = pose_sub(position, PoseRelativeToFeature)
+       vect = p[diff[0], diff[1], diff[2], 0, 0, 0]
+    
+       MoveTCPRelativeToFeature = pose_add(PoseRelativeToFeature, vect)
+       return pose_trans(feature, MoveTCPRelativeToFeature)
+    
+    end
+    $ 4 "Script: pose_trasf.script"
+    def pose_trasf(pose, feature, vect):
+    
+       PoseRelativeToFeature = pose_trans(pose_inv(feature), pose)
+       MoveTCPRelativeToFeature = pose_add(PoseRelativeToFeature, vect)
+       return pose_trans(feature, MoveTCPRelativeToFeature)
+    
+    end
+    $ 5 "var_2≔'ask'"
+    global var_2=request_integer_from_primary_client("ask")
+    $ 6 "MoveJ"
+    $ 7 "Waypoint_1" "breakAfter"
+    movej(get_inverse_kin(p[.173255520493, .555938380211, .079137216861, -2.925759251123, -.629361427438, -.557738247382], qnear=[1.6064051389694214, -2.007477108632223, -2.047131363545553, -0.49011356035341436, 1.2270253896713257, -0.41732770601381475]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 8 "var_1≔pose_trasf(Waypoint_1,piano_moduli_const,p[0.1,0,0,0,0,0])"
+    global var_1=pose_trasf(p[.173255520493, .555938380211, .079137216861, -2.925759251123, -.629361427438, -.557738247382],p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034],p[0.1,0,0,0,0,0])
+    $ 9 "var_1" "breakAfter"
+    movej(var_1, a=1.3962634015954636, v=1.0471975511965976)
+    $ 10 "Waypoint_2" "breakAfter"
+    movej(get_inverse_kin(p[.333873326192, .484240715453, .484503097679, 1.888503829291, -.549434500530, 2.238016326768], qnear=[1.3607664108276367, -1.9317253271686, -1.57843524614443, -0.2767427603351038, -0.22499210039247686, -0.7623422781573694]), a=1.3962634015954636, v=1.0471975511965976)
+    $ 11 "var_1≔pose_to_position(Waypoint_1,piano_moduli_const,p[0.1-0.07,-0.03,0.4,0,0,0])"
+    global var_1=pose_to_position(p[.173255520493, .555938380211, .079137216861, -2.925759251123, -.629361427438, -.557738247382],p[0.13993944179688836,0.3246186948043025,-0.2543011639693953,-0.6047704836459776,0.6135130132010319,1.4699264397811034],p[0.1-0.07,-0.03,0.4,0,0,0])
+    $ 12 "var_1" "breakAfter"
+    movej(var_1, a=1.3962634015954636, v=1.0471975511965976)
+  end
+end

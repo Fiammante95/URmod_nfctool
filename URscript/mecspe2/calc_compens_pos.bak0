@@ -1,0 +1,14 @@
+def calc_compens_pos(item, prop, grid, module, feature, posAppr):
+
+	compens = p[0,0,0,0,0,0]
+	posPred = calc_item_position(item, prop, grid, module, 1, compens)
+	
+	posApprFeat = pose_trans(pose_inv(feature), posAppr)
+	diff = pose_sub(posApprFeat - posPred)
+
+	compens[0] = diff[0]
+	compens[1] = diff[1]
+
+	return compens
+
+end
